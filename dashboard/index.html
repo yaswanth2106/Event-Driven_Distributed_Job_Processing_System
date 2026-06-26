@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distributed Platform Dashboard</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-weight: 600;
+            margin-bottom: 2rem;
+            background: -webkit-linear-gradient(#38bdf8, #818cf8);
+            background: linear-gradient(#38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            font-size: 1rem;
+            color: #94a3b8;
+            margin: 0 0 0.5rem 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .card .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #e2e8f0;
+        }
+
+        .status {
+            margin-top: 2rem;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            background: #10b981;
+            color: #022c22;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status.disconnected {
+            background: #ef4444;
+            color: #450a0a;
+        }
+
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background: currentColor;
+            border-radius: 50%;
+            animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+
+        @keyframes ping {
+
+            75%,
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        .alerts-container {
+            margin-top: 2rem;
+            max-width: 900px;
+            width: 100%;
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            box-sizing: border-box;
+        }
+
+        .alerts-container h2 {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin: 0 0 1rem 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 0.5rem;
+        }
+
+        .alerts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .alerts-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .alerts-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .alerts-list::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            animation: slideIn 0.3s ease-out;
+            border-left: 4px solid transparent;
+            box-sizing: border-box;
+        }
+
+        .alert-item.info {
+            background: rgba(56, 189, 248, 0.1);
+            border-color: #38bdf8;
+            color: #38bdf8;
+        }
+
+        .alert-item.warning {
+            background: rgba(251, 191, 36, 0.1);
+            border-color: #fbbf24;
+            color: #fbbf24;
+        }
+
+        .alert-item.critical {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+            color: #ef4444;
+            animation: pulse-border 2.0s infinite alternate, slideIn 0.3s ease-out;
+        }
+
+        .alert-empty {
+            color: #64748b;
+            text-align: center;
+            font-style: italic;
+            padding: 1rem 0;
+        }
+
+        .alert-timestamp {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-left: 1rem;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse-border {
+            from {
+                box-shadow: 0 0 2px rgba(239, 68, 68, 0.2);
+            }
+
+            to {
+                box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <h1>Telemetry</h1>
+
+    <div class="grid">
+        <div class="card">
+            <h2>Workers Alive</h2>
+            <div class="value" id="workers">0</div>
+        </div>
+        <div class="card">
+            <h2>Queue Depth</h2>
+            <div class="value" id="queue">0</div>
+        </div>
+        <div class="card">
+            <h2>RPS</h2>
+            <div class="value" id="rps">0.0</div>
+        </div>
+        <div class="card">
+            <h2>Avg Latency (s)</h2>
+            <div class="value" id="latency">0.000</div>
+        </div>
+        <div class="card">
+            <h2>Total Failures</h2>
+            <div class="value" id="failures">0</div>
+        </div>
+    </div>
+
+    <div class="alerts-container">
+        <h2>Live System Alerts</h2>
+        <div id="alertsList" class="alerts-list">
+            <div class="alert-empty">No active system alerts.</div>
+        </div>
+    </div>
+
+    <div id="statusIndicator" class="status disconnected">
+        <div class="pulse"></div>
+        <span id="statusText">Connecting</span>
+    </div>
+
+    <script>
+        function connect() {
+            const ws = new WebSocket('ws://localhost:8080');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+
+            ws.onopen = () => {
+                statusIndicator.className = 'status';
+                statusText.innerText = 'Connected';
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                document.getElementById('workers').innerText = data.workers_alive;
+                document.getElementById('queue').innerText = data.queue_depth;
+                document.getElementById('rps').innerText = data.rps;
+                document.getElementById('latency').innerText = data.latency;
+                document.getElementById('failures').innerText = data.failures;
+
+                const alertsList = document.getElementById('alertsList');
+                if (data.alerts && data.alerts.length > 0) {
+                    alertsList.innerHTML = '';
+                    data.alerts.forEach(alert => {
+                        const date = new Date(alert.timestamp * 1000);
+                        const timeStr = date.toLocaleTimeString();
+
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = `alert-item ${alert.level.toLowerCase()}`;
+
+                        const msgSpan = document.createElement('span');
+                        msgSpan.innerText = alert.message;
+
+                        const timeSpan = document.createElement('span');
+                        timeSpan.className = 'alert-timestamp';
+                        timeSpan.innerText = timeStr;
+
+                        alertDiv.appendChild(msgSpan);
+                        alertDiv.appendChild(timeSpan);
+                        alertsList.appendChild(alertDiv);
+                    });
+                } else {
+                    alertsList.innerHTML = '<div class="alert-empty">No active system alerts.</div>';
+                }
+            };
+
+            ws.onclose = () => {
+                statusIndicator.className = 'status disconnected';
+                statusText.innerText = 'Disconnected - Retrying';
+                setTimeout(connect, 2000);
+            };
+        }
+
+        connect();
+    </script>
+</body>
+
+</html>

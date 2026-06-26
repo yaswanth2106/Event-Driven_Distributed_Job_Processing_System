@@ -1,0 +1,7 @@
+__pycache__/
+.pytest_cache/
+.env
+fix_plan.md
+logs/
+*.log
+*.aof

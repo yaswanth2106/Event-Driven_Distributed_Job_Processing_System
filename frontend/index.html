@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Dispatch Controller</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: rgba(17, 24, 39, 0.75);
+            --border-color: #1e293b;
+            --accent-primary: #38bdf8;
+            --accent-secondary: #818cf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+
+            --low-color: #38bdf8;
+            --medium-color: #fbbf24;
+            --high-color: #ef4444;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, transparent 70%);
+            top: 10%;
+            left: 15%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(129, 140, 248, 0.12) 0%, transparent 70%);
+            bottom: 10%;
+            right: 15%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2.5rem;
+            max-width: 480px;
+            width: 90%;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(20px);
+            animation: containerAppear 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            margin: 2rem 0;
+        }
+
+        @keyframes containerAppear {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+            text-align: center;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select,
+        textarea {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.85rem 1rem;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.25em;
+            padding-right: 2.5rem;
+        }
+
+        .priority-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+
+        .priority-btn {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.75rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .priority-btn:hover {
+            background: rgba(30, 41, 59, 0.5);
+            color: var(--text-main);
+        }
+
+        .priority-btn.selected[data-val="LOW"] {
+            border-color: var(--low-color);
+            color: var(--low-color);
+            background: rgba(56, 189, 248, 0.08);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.15);
+        }
+
+        .priority-btn.selected[data-val="MEDIUM"] {
+            border-color: var(--medium-color);
+            color: var(--medium-color);
+            background: rgba(251, 191, 36, 0.08);
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.15);
+        }
+
+        .priority-btn.selected[data-val="HIGH"] {
+            border-color: var(--high-color);
+            color: var(--high-color);
+            background: rgba(239, 68, 68, 0.08);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.15);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            border-radius: 10px;
+            padding: 1rem;
+            color: #0b0f19;
+            font-weight: 700;
+            font-size: 0.95rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.25);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            background: #1e293b;
+            color: #64748b;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(11, 15, 25, 0.2);
+            border-top: 2px solid #0b0f19;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .status-box {
+            margin-top: 1.5rem;
+            border-radius: 10px;
+            padding: 1rem;
+            font-size: 0.85rem;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+            line-height: 1.4;
+        }
+
+        .status-box.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+            display: block;
+        }
+
+        .status-box.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            display: block;
+        }
+
+        .payload-fields-group {
+            animation: slideIn 0.25s ease-out;
+        }
+
+        .result-card {
+            margin-top: 1.5rem;
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .result-card h3 {
+            margin-top: 0;
+            font-size: 1rem;
+            font-family: 'Outfit', sans-serif;
+            color: var(--accent-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.6rem;
+            font-size: 0.9rem;
+        }
+
+        .result-label {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .result-value {
+            color: var(--text-main);
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .badge {
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        .badge.success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .badge.danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Task Dispatcher</h1>
+        <div class="subtitle">Submit security pipeline workloads via API Gateway</div>
+
+        <form id="dispatchForm" onsubmit="handleSubmit(event)">
+            <div class="form-group">
+                <label for="jobTypeSelect">Job Category / Type</label>
+                <select id="jobTypeSelect" onchange="handleJobTypeChange()">
+                    <option value="password-leak-audit">Password Leak Audit</option>
+                    <option value="mfa-totp-verifier">MFA TOTP Verifier</option>
+                    <option value="signature-verifier">Signature Verifier</option>
+                    <option value="custom">Custom Task Type</option>
+                </select>
+            </div>
+
+            <div id="customJobTypeGroup" class="form-group" style="display: none;">
+                <label for="customJobType">Custom Task Identifier</label>
+                <input type="text" id="customJobType" placeholder="e.g., audio-enhancement">
+            </div>
+
+            <!-- Password Leak Audit Fields -->
+            <div id="passwordFields" class="payload-fields-group">
+                <div class="form-group">
+                    <label for="passwordInput">Password to Audit</label>
+                    <input type="password" id="passwordInput" placeholder="Enter password to check for compromises">
+                </div>
+            </div>
+
+            <!-- MFA TOTP Verifier Fields -->
+            <div id="mfaFields" class="payload-fields-group" style="display: none;">
+                <div class="form-group">
+                    <label for="mfaSecretInput">Base32 Shared Secret</label>
+                    <input type="text" id="mfaSecretInput" placeholder="e.g. JBSWY3DPEHPK3PXP">
+                </div>
+                <div class="form-group">
+                    <label for="mfaCodeInput">6-digit TOTP Code</label>
+                    <input type="text" id="mfaCodeInput" placeholder="e.g. 123456">
+                </div>
+            </div>
+
+
+            <div id="signatureFields" class="payload-fields-group" style="display: none;">
+                <div class="form-group">
+                    <label for="sigPubKeyInput">Ed25519 Public Key (Hex)</label>
+                    <input type="text" id="sigPubKeyInput" placeholder="32-byte (64 hex characters)">
+                </div>
+                <div class="form-group">
+                    <label for="sigMessageInput">Message payload</label>
+                    <input type="text" id="sigMessageInput" placeholder="Signed message text">
+                </div>
+                <div class="form-group">
+                    <label for="sigSignatureInput">Signature (Hex)</label>
+                    <input type="text" id="sigSignatureInput" placeholder="64-byte (128 hex characters)">
+                </div>
+            </div>
+
+
+            <div id="customFields" class="payload-fields-group" style="display: none;">
+                <div class="form-group">
+                    <label for="customPayloadInput">Custom Payload (JSON)</label>
+                    <textarea id="customPayloadInput" rows="3" placeholder='{"key": "value"}'></textarea>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Priority Level</label>
+                <div class="priority-grid">
+                    <button type="button" class="priority-btn" data-val="LOW"
+                        onclick="selectPriority('LOW')">LOW</button>
+                    <button type="button" class="priority-btn selected" data-val="MEDIUM"
+                        onclick="selectPriority('MEDIUM')">MEDIUM</button>
+                    <button type="button" class="priority-btn" data-val="HIGH"
+                        onclick="selectPriority('HIGH')">HIGH</button>
+                </div>
+            </div>
+
+            <button type="submit" id="submitBtn" class="submit-btn">
+                <div id="spinner" class="spinner"></div>
+                <span>Dispatch Workload</span>
+            </button>
+        </form>
+
+        <div id="statusBox" class="status-box"></div>
+
+        <div id="resultCard" class="result-card" style="display: none;">
+            <h3>Execution Output</h3>
+            <div id="resultDetails"></div>
+        </div>
+    </div>
+
+    <script>
+        let selectedPriority = 'MEDIUM';
+
+        function selectPriority(val) {
+            selectedPriority = val;
+            document.querySelectorAll('.priority-btn').forEach(btn => {
+                if (btn.getAttribute('data-val') === val) {
+                    btn.classList.add('selected');
+                } else {
+                    btn.classList.remove('selected');
+                }
+            });
+        }
+
+        function handleJobTypeChange() {
+            const val = document.getElementById('jobTypeSelect').value;
+
+
+            document.querySelectorAll('.payload-fields-group').forEach(el => el.style.display = 'none');
+            document.getElementById('customJobTypeGroup').style.display = 'none';
+
+
+            if (val === 'password-leak-audit') {
+                document.getElementById('passwordFields').style.display = 'block';
+            } else if (val === 'mfa-totp-verifier') {
+                document.getElementById('mfaFields').style.display = 'block';
+            } else if (val === 'signature-verifier') {
+                document.getElementById('signatureFields').style.display = 'block';
+            } else if (val === 'custom') {
+                document.getElementById('customFields').style.display = 'block';
+                document.getElementById('customJobTypeGroup').style.display = 'block';
+            }
+        }
+
+        async function handleSubmit(event) {
+            event.preventDefault();
+
+            const selectVal = document.getElementById('jobTypeSelect').value;
+            let jobType = selectVal;
+            let payload = {};
+
+            if (selectVal === 'custom') {
+                jobType = document.getElementById('customJobType').value.trim();
+                if (!jobType) {
+                    alert('Please specify a custom task identifier');
+                    return;
+                }
+                const rawPayload = document.getElementById('customPayloadInput').value.trim();
+                if (rawPayload) {
+                    try {
+                        payload = JSON.parse(rawPayload);
+                    } catch (e) {
+                        alert('Invalid JSON in custom payload');
+                        return;
+                    }
+                }
+            } else if (selectVal === 'password-leak-audit') {
+                const password = document.getElementById('passwordInput').value;
+                if (!password) {
+                    alert('Please enter a password');
+                    return;
+                }
+                payload = { password: password };
+            } else if (selectVal === 'mfa-totp-verifier') {
+                const secret = document.getElementById('mfaSecretInput').value.trim();
+                const code = document.getElementById('mfaCodeInput').value.trim();
+                if (!secret || !code) {
+                    alert('Please enter secret and code');
+                    return;
+                }
+                payload = { secret: secret, code: code };
+            } else if (selectVal === 'signature-verifier') {
+                const pubKey = document.getElementById('sigPubKeyInput').value.trim();
+                const message = document.getElementById('sigMessageInput').value.trim();
+                const sig = document.getElementById('sigSignatureInput').value.trim();
+                if (!pubKey || !message || !sig) {
+                    alert('Please fill out all signature verification fields');
+                    return;
+                }
+                payload = { public_key: pubKey, message: message, signature: sig };
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            const spinner = document.getElementById('spinner');
+            const statusBox = document.getElementById('statusBox');
+            const resultCard = document.getElementById('resultCard');
+
+            // UI Loading State
+            submitBtn.disabled = true;
+            spinner.style.display = 'block';
+            statusBox.className = 'status-box';
+            statusBox.style.display = 'none';
+            resultCard.style.display = 'none';
+
+            try {
+                const response = await fetch('/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        job_type: jobType,
+                        priority: selectedPriority,
+                        payload: payload
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    statusBox.className = 'status-box success';
+                    statusBox.innerText = `Workload Dispatched!\n\nStatus: ${result.status}\nTask ID: ${result.task_id} \nOutput: ${result.result}
+                     \n  Job: ${result.task_id} \n  Worker: ${result.worker_id}`;
+
+                    displayExecutionResult(jobType, result.result);
+                } else {
+                    statusBox.className = 'status-box error';
+                    statusBox.innerText = `Submission/Execution Failed:\n${result.error || 'Server error occurred'}`;
+                }
+            } catch (err) {
+                statusBox.className = 'status-box error';
+                statusBox.innerText = `Connection Error: Could not reach frontend controller proxy.`;
+            } finally {
+                submitBtn.disabled = false;
+                spinner.style.display = 'none';
+                statusBox.style.display = 'block';
+            }
+        }
+
+        function displayExecutionResult(jobType, result) {
+            const resultCard = document.getElementById('resultCard');
+            const resultDetails = document.getElementById('resultDetails');
+
+            if (!result) {
+                resultCard.style.display = 'none';
+                return;
+            }
+
+            resultCard.style.display = 'block';
+            let html = '';
+
+            if (jobType === 'password-leak-audit') {
+                const badgeClass = result.leaked ? 'badge danger' : 'badge success';
+                const badgeText = result.leaked ? 'COMPROMISED / LEAKED' : 'SECURE / NO LEAKS';
+
+                html = `
+                    <div class="result-item">
+                        <span class="result-label">Audit Status:</span>
+                        <span class="${badgeClass}">${badgeText}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Hash Prefix (SHA-1):</span>
+                        <span class="result-value">${result.hash_prefix || 'N/A'}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Leak Occurrences:</span>
+                        <span class="result-value">${result.leak_count ? result.leak_count.toLocaleString() : 0} times</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Password Length:</span>
+                        <span class="result-value">${result.password_length || 0} chars</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Strength Rating:</span>
+                        <span class="result-value" style="color: ${result.strength_rating === 'WEAK' ? 'var(--high-color)' : (result.strength_rating === 'STRONG' ? '#10b981' : 'var(--medium-color)')}">${result.strength_rating || 'UNKNOWN'}</span>
+                    </div>
+                `;
+            } else if (jobType === 'mfa-totp-verifier') {
+                const badgeClass = result.valid ? 'badge success' : 'badge danger';
+                const badgeText = result.valid ? 'VERIFIED' : 'INVALID CODE';
+
+                html = `
+                    <div class="result-item">
+                        <span class="result-label">Verification:</span>
+                        <span class="${badgeClass}">${badgeText}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Clock Drift:</span>
+                        <span class="result-value">${result.drift !== null ? result.drift + ' steps' : '0 steps'}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Timestamp:</span>
+                        <span class="result-value">${new Date(result.timestamp * 1000).toLocaleTimeString()}</span>
+                    </div>
+                `;
+            } else if (jobType === 'signature-verifier') {
+                const badgeClass = result.valid ? 'badge success' : 'badge danger';
+                const badgeText = result.valid ? 'SIGNATURE VALID' : 'SIGNATURE INVALID';
+
+                html = `
+                    <div class="result-item">
+                        <span class="result-label">Verification:</span>
+                        <span class="${badgeClass}">${badgeText}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Algorithm:</span>
+                        <span class="result-value">${result.algorithm || 'Ed25519'}</span>
+                    </div>
+                    ${result.error ? `
+                    <div class="result-item">
+                        <span class="result-label">Error Details:</span>
+                        <span class="result-value" style="color: var(--high-color)">${result.error}</span>
+                    </div>
+                    ` : ''}
+                `;
+            } else {
+                html = `<pre style="font-size: 0.8rem; background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 8px; overflow-x: auto; color: var(--text-main); margin: 0;">${JSON.stringify(result, null, 2)}</pre>`;
+            }
+
+            resultDetails.innerHTML = html;
+        }
+    </script>
+
+</body>
+
+</html>
