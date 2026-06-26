@@ -1,5 +1,3 @@
-import os
-import sys
 import time
 import uuid
 from types import ModuleType
@@ -20,7 +18,7 @@ from queue_engine.retry_queue import RetryQueue
 from queue_engine.dead_letter_queue import DeadLetterQueue
 from metrics.collector import MetricsCollector
 from logging_service.structured_logger import StructuredLogger
-
+from coordinator.autoscaler import Autoscaler
 
 config: Optional[ModuleType] = None
 try:
@@ -28,7 +26,7 @@ try:
 except ImportError:
     config = None
 
-from coordinator.autoscaler import Autoscaler
+
 
 class CoordinatorService:
     def __init__(self):
