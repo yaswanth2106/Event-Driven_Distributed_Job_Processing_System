@@ -1,10 +1,6 @@
-import sys
-import os
 import time
 import json
 import threading
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from event_bus.event_types import JOB_SUBMITTED, JOB_COMPLETED, TASK_ASSIGNED, TASK_FAILED, REGISTER, WORKER_FAILED, JOB_STARTED, ALERT_EVENT
 from cache.cache_manager import CacheClient
 

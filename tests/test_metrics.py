@@ -1,8 +1,4 @@
-import sys
-import os
 from unittest.mock import MagicMock, patch
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
 with patch('cache.cache_manager.CacheClient'):

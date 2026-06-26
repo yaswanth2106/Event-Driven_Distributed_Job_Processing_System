@@ -1,8 +1,4 @@
-import sys
-import os
 from unittest.mock import MagicMock
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from API_gateway.router import parse_http_request
 
 def test_parse_http_request():

@@ -4,12 +4,10 @@ import json
 import threading
 import queue
 import time
-from concurrent.futures import ThreadPoolExecutor
 import sys
 import os
 from http.server import BaseHTTPRequestHandler, HTTPServer
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from concurrent.futures import ThreadPoolExecutor
 from types import ModuleType
 from typing import Optional
 

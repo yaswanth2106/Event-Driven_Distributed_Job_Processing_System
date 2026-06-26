@@ -1,15 +1,12 @@
 import argparse
 import asyncio
 import json
-import os
 import sys
 import time
 from types import ModuleType
 
 import aiohttp
 from cache.cache_manager import CacheClient
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 config: ModuleType | None = None
 try:

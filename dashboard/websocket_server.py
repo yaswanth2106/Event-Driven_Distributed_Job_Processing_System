@@ -1,8 +1,6 @@
 import asyncio
 import json
 import logging
-import os
-import sys
 from types import ModuleType
 from typing import Optional
 
@@ -11,8 +9,6 @@ from websockets.asyncio.server import ServerConnection, serve
 from cache.cache_manager import CacheClient
 
 logging.getLogger("websockets.server").setLevel(logging.ERROR)
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 config: Optional[ModuleType] = None
 try:

@@ -1,14 +1,9 @@
-import os
-import sys
 import socket
 import threading
 from types import ModuleType
 from typing import Optional
-
-from .router import process_client_socket
-from .connection_pool import bus_pool
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from API_gateway.router import process_client_socket
+from API_gateway.connection_pool import bus_pool
 
 config: Optional[ModuleType] = None
 try:

@@ -13,13 +13,13 @@ root_dir = os.path.abspath(os.path.dirname(__file__))
 log_dir = os.path.join(root_dir, "logs")
 os.makedirs(log_dir, exist_ok=True)
 services = [
-    (f"Event Broker Service (Port {config.EVENT_BROKER_PORT})", [sys.executable, "event_bus/broker_service.py", str(config.EVENT_BROKER_PORT)], root_dir, 1.0),
-    (f"LRU Cache (Port {config.TASK_CACHE_PORT})", [sys.executable, "cache/lru_cache.py", str(config.TASK_CACHE_PORT)], root_dir, 1.0),
-    ("Coordinator Service", [sys.executable, "coordinator/coordinator.py"], root_dir, 1.0),
-    ("API Gateway Service", [sys.executable, "gateway.py"], os.path.join(root_dir, "API_gateway"), 1.0),
-    ("WebSocket Dashboard Server", [sys.executable, "dashboard/websocket_server.py"], root_dir, 0.5),
-    ("Event-Driven Worker", [sys.executable, "workers/worker.py"], root_dir, 0.5),
-    ("Frontend Workload Dispatcher", [sys.executable, "frontend/app.py"], root_dir, 0.5)
+    (f"Event Broker Service (Port {config.EVENT_BROKER_PORT})", [sys.executable, "-m", "event_bus.broker_service", str(config.EVENT_BROKER_PORT)], root_dir, 1.0),
+    (f"LRU Cache (Port {config.TASK_CACHE_PORT})", [sys.executable, "-m", "cache.lru_cache", str(config.TASK_CACHE_PORT)], root_dir, 1.0),
+    ("Coordinator Service", [sys.executable, "-m", "coordinator.coordinator"], root_dir, 1.0),
+    ("API Gateway Service", [sys.executable, "-m", "API_gateway.gateway"], root_dir, 1.0),
+    ("WebSocket Dashboard Server", [sys.executable, "-m", "dashboard.websocket_server"], root_dir, 0.5),
+    ("Event-Driven Worker", [sys.executable, "-m", "workers.worker"], root_dir, 0.5),
+    ("Frontend Workload Dispatcher", [sys.executable, "-m", "frontend.app"], root_dir, 0.5)
 ]
 
 processes = []

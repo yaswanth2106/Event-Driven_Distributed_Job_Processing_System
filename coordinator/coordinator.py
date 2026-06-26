@@ -7,12 +7,12 @@ from typing import Optional
 
 from event_bus.event_types import JOB_SUBMITTED, HEARTBEAT, WORKER_FAILED, JOB_COMPLETED, REGISTER, TASK_FAILED, TASK_ASSIGNED
 from event_bus.event_bus import InternalEventBus, EventLoop
-from worker_registry import WorkerRegistry
-from scheduler import Scheduler
-from circuit_breaker import CircuitBreakerManager
-from heartbeat_monitor import HeartbeatMonitor
-from failure_detector import FailureDetector
-from task_assigner import TaskAssigner
+from coordinator.worker_registry import WorkerRegistry
+from coordinator.scheduler import Scheduler
+from coordinator.circuit_breaker import CircuitBreakerManager
+from coordinator.heartbeat_monitor import HeartbeatMonitor
+from coordinator.failure_detector import FailureDetector
+from coordinator.task_assigner import TaskAssigner
 from storage.postgres_store import PostgresStore
 from storage.task_repository import TaskRepository
 from storage.worker_repository import WorkerRepository
@@ -21,9 +21,6 @@ from queue_engine.dead_letter_queue import DeadLetterQueue
 from metrics.collector import MetricsCollector
 from logging_service.structured_logger import StructuredLogger
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from importlib import import_module
 
 config: Optional[ModuleType] = None
 try:
@@ -31,12 +28,7 @@ try:
 except ImportError:
     config = None
 
-try:
-    _autoscaler_module = import_module("coordinator.autoscaler")
-except ImportError:
-    _autoscaler_module = import_module("autoscaler")
-
-Autoscaler = _autoscaler_module.Autoscaler
+from coordinator.autoscaler import Autoscaler
 
 class CoordinatorService:
     def __init__(self):

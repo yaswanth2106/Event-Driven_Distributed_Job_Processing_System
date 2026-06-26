@@ -1,7 +1,3 @@
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 import json
 from unittest.mock import MagicMock, patch
 from API_gateway.router import process_client_socket

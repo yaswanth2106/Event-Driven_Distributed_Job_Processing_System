@@ -6,8 +6,8 @@ import uuid
 from types import ModuleType
 from typing import Any, Optional
 
-from .connection_pool import bus_pool
-from .middleware import MIDDLEWARE_PIPELINE
+from API_gateway.connection_pool import bus_pool
+from API_gateway.middleware import MIDDLEWARE_PIPELINE
 from cache.cache_manager import task_cache
 
 config: Optional[ModuleType] = None
@@ -228,7 +228,8 @@ def process_client_socket(client_conn, client_addr):
                     return
                 
                 try:
-                    bus_sock.sendall(body_part if body_part else b'{"event": "ping"}')
+                    payload = (body_part if body_part else b'{"event": "ping"}') + b"\n"
+                    bus_sock.sendall(payload)
                     bus_sock.recv(1024)
                     bus_pool.release_connection(bus_sock, status_ok=True)
                     

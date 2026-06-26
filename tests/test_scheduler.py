@@ -1,8 +1,4 @@
-import sys
-import os
 import time
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from coordinator.scheduler import Scheduler
 from coordinator.worker_registry import WorkerRegistry
 

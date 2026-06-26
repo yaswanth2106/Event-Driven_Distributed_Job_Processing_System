@@ -7,7 +7,6 @@ from types import ModuleType
 from typing import Optional
 from cache.cache_manager import parse_resp
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 config: Optional[ModuleType] = None
 try:
