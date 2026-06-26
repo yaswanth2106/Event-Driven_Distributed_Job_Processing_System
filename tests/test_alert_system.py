@@ -4,7 +4,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import time
 import json
-import pytest
 from event_bus.event_bus import InternalEventBus
 from metrics.collector import MetricsCollector
 from event_bus.event_types import REGISTER, WORKER_FAILED, TASK_FAILED, ALERT_EVENT
@@ -64,12 +63,12 @@ def test_alert_generation_and_storage():
          server.stop()
          try:
              broker.stop()
-         except:
+         except Exception:
              pass
          if os.path.exists("tests/test_alert_cache.aof"):
             try:
                 os.remove("tests/test_alert_cache.aof")
-            except:
+            except Exception:
                 pass
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import time
-import pytest
+
 from coordinator.circuit_breaker import WorkerCircuitBreaker, CircuitBreakerState
 
 def test_circuit_breaker_transitions():

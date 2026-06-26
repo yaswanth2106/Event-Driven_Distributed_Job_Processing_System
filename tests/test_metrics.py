@@ -1,18 +1,17 @@
 import sys
 import os
-import pytest
 from unittest.mock import MagicMock, patch
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
-with patch('cache.cache_manager.CacheClient') as MockCacheClient:
+with patch('cache.cache_manager.CacheClient'):
     from metrics.collector import MetricsCollector
 
 def test_metrics_collector_events():
     mock_bus = MagicMock()
     
-    with patch('cache.cache_manager.CacheClient') as MockCacheClient:
+    with patch('cache.cache_manager.CacheClient'):
         collector = MetricsCollector(mock_bus)
         
         assert collector.telemetry["workers_alive"] == 0

@@ -97,11 +97,12 @@ class LRUCacheServer:
             while self.running:
                 try:
                     chunk = conn.recv(4096)
-                    if not chunk: break
+                    if not chunk:
+                        break
                     if chunk.startswith(b"GET ") or chunk.startswith(b"HEAD "):
                         try:
                             conn.sendall(b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nOK")
-                        except:
+                        except Exception:
                             pass
                         return
                     buffer += chunk.decode('utf-8', errors='ignore')
@@ -178,7 +179,7 @@ class LRUCacheServer:
         if self.server_socket:
             try:
                 self.server_socket.close()
-            except:
+            except Exception:
                 pass
 
 if __name__ == "__main__":

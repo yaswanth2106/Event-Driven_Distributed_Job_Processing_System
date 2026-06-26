@@ -32,7 +32,7 @@ class EventBusConnectionPool:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect((self.host, self.port))
                 return s
-            except:
+            except Exception:
                 return None
 
     def release_connection(self, sock, status_ok=True):
@@ -44,7 +44,7 @@ class EventBusConnectionPool:
         else:
             try:
                 sock.close()
-            except:
+            except Exception:
                 pass
 
 

@@ -73,7 +73,7 @@ finally:
     for f in log_files:
         try:
             f.close()
-        except:
+        except Exception:
             pass
     print("[SHUTDOWN] ")
 

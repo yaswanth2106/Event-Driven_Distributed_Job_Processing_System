@@ -4,7 +4,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import time
 import threading
-import pytest
 from cache.cache_manager import CacheClient
 from cache.lru_cache import LRUCacheServer
 
@@ -53,7 +52,7 @@ def test_cache_client_pool_concurrency():
         if os.path.exists("tests/test_cache.aof"):
             try:
                 os.remove("tests/test_cache.aof")
-            except:
+            except Exception:
                 pass
 
 if __name__ == "__main__":

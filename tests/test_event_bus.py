@@ -1,10 +1,9 @@
 import sys
 import os
-import pytest
 from unittest.mock import MagicMock, patch
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from event_bus.event_bus import InternalEventBus, EventLoop
+from event_bus.event_bus import InternalEventBus
 from event_bus.event_types import JOB_SUBMITTED
 
 def test_event_bus_initialization():

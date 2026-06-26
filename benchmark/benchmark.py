@@ -32,7 +32,7 @@ class MockWorker:
             try:
                 self.reader, self.writer = await asyncio.open_connection(self.host, self.port)
                 connected = True
-            except Exception as e:
+            except Exception:
                 retries += 1
                 await asyncio.sleep(1.0)
                 
@@ -107,7 +107,7 @@ class MockWorker:
             try:
                 self.writer.close()
                 await self.writer.wait_closed()
-            except:
+            except Exception:
                 pass
             self.writer = None
 

@@ -97,11 +97,11 @@ def start_event_broker_listener():
                 if sock:
                     try:
                         sel.unregister(sock)
-                    except:
+                    except Exception:
                         pass
                     try:
                         sock.close()
-                    except:
+                    except Exception:
                         pass
             time.sleep(1.0) 
 
@@ -147,7 +147,7 @@ def parse_http_request(client_conn):
     parts = lines[0].split(" ")
     if len(parts) < 3:
         raise ValueError("400 Bad Request: Invalid Request Line")
-    method, path, http_version = parts[0], parts[1], parts[2]
+    method, path, _ = parts[0], parts[1], parts[2]
     
     headers = lines[1:]
     content_length = 0
@@ -155,7 +155,7 @@ def parse_http_request(client_conn):
         if line.lower().startswith("content-length:"):
             try:
                 content_length = int(line.split(":", 1)[1].strip())
-            except:
+            except Exception:
                 content_length = 0
             break
             
@@ -201,7 +201,7 @@ def process_client_socket(client_conn, client_addr):
                 resp = f"HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {len(body)}\r\nConnection: close\r\n\r\n{body}"
                 try:
                     client_conn.sendall(resp.encode('utf-8'))
-                except:
+                except Exception:
                     pass
                 return
 

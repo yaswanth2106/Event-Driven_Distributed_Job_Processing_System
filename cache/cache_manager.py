@@ -1,6 +1,5 @@
 import socket
 import queue
-import json
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -113,12 +112,12 @@ class CacheClient:
             except queue.Full:
                 try:
                     sock.close()
-                except:
+                except Exception:
                     pass
         else:
             try:
                 sock.close()
-            except:
+            except Exception:
                 pass
 
     def _send_command(self, cmd_array):
@@ -182,7 +181,7 @@ class CacheClient:
                 sock = self.pool.get_nowait()
                 try:
                     sock.sendall(b"*1\r\n$4\r\nQUIT\r\n")
-                except:
+                except Exception:
                     pass
                 sock.close()
             except queue.Empty:

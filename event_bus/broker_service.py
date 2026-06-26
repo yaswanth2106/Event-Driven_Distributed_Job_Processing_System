@@ -39,11 +39,11 @@ class PubSubBroker:
         finally:
             try:
                 self.sel.close()
-            except:
+            except Exception:
                 pass
             try:
                 lsock.close()
-            except:
+            except Exception:
                 pass
 
     def stop(self):
@@ -68,15 +68,15 @@ class PubSubBroker:
             if data.startswith(b"GET ") or data.startswith(b"HEAD "):
                 try:
                     conn.sendall(b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nOK")
-                except:
+                except Exception:
                     pass
                 try:
                     self.sel.unregister(conn)
-                except:
+                except Exception:
                     pass
                 try:
                     conn.close()
-                except:
+                except Exception:
                     pass
                 self.buffers.pop(conn, None)
                 return

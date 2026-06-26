@@ -14,7 +14,7 @@ def middleware_request_validator(addr, headers, method, path, body=b""):
             data = json.loads(body_str)
             if "job_type" not in data:
                 raise ValueError("Missing job_type")
-        except Exception as e:
+        except Exception:
             print(f"[VALIDATION FAILED] Invalid job payload from {addr[0]}")
             err_body = '{"error": "Bad Request: Invalid Job Payload"}'
             resp = f"HTTP/1.1 400 Bad Request\r\nContent-Type: application/json\r\nContent-Length: {len(err_body)}\r\n\r\n{err_body}"

@@ -27,7 +27,6 @@ def audit_password(password):
     
     sha1_hash = hashlib.sha1(password.encode('utf-8')).hexdigest().upper()
     prefix = sha1_hash[:5]
-    suffix = sha1_hash[5:]
     
     leaked = False
     count = 0

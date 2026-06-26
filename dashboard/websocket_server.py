@@ -14,7 +14,7 @@ try:
 except ImportError:
     config = None
 
-from cache.cache_manager import CacheClient
+from cache.cache_manager import CacheClient  # noqa: E402
 
 cache_host = config.CACHE_HOST if config else "127.0.0.1"
 cache_port = config.TASK_CACHE_PORT if config else 6381
@@ -25,11 +25,11 @@ class RenderWSConnection(ServerConnection):
         if b"Upgrade: websocket" not in data and (data.startswith(b"GET ") or data.startswith(b"HEAD ") or data.startswith(b"OPTIONS ")):
             try:
                 self.transport.write(b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nOK")
-            except:
+            except Exception:
                 pass
             try:
                 self.transport.close()
-            except:
+            except Exception:
                 pass
             return
         super().data_received(data)
