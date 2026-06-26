@@ -23,6 +23,8 @@ from logging_service.structured_logger import StructuredLogger
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+from importlib import import_module
+
 config: Optional[ModuleType] = None
 try:
     import config
@@ -30,10 +32,11 @@ except ImportError:
     config = None
 
 try:
-    from .autoscaler import Autoscaler
+    _autoscaler_module = import_module("coordinator.autoscaler")
 except ImportError:
-    import autoscaler as _autoscaler
-    Autoscaler = _autoscaler.Autoscaler
+    _autoscaler_module = import_module("autoscaler")
+
+Autoscaler = _autoscaler_module.Autoscaler
 
 class CoordinatorService:
     def __init__(self):
