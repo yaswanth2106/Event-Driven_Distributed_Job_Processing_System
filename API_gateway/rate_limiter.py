@@ -3,7 +3,7 @@ import threading
 
 MAX_TOKENS = 100.0
 REFILL_RATE = 100.0  
-rate_limit_buckets = {}
+rate_limit_buckets: dict[str, tuple[float, float]] = {}
 rl_lock = threading.Lock()
 
 def middleware_rate_limiter(addr, headers, method, path, body=b""):

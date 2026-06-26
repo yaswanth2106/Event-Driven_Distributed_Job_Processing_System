@@ -9,7 +9,7 @@ try:
 except ImportError:
     DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/platform_db")
 
-Base = declarative_base()
+Base = declarative_base()  # type: ignore[valid-type]
 
 class WorkerDB(Base):
     __tablename__ = 'workers'

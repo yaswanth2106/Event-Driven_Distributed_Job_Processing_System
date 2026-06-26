@@ -8,6 +8,10 @@ import threading
 import re
 from logging.handlers import RotatingFileHandler
 
+from types import ModuleType
+from typing import Optional
+
+config: Optional[ModuleType] = None
 try:
     import config
 except ImportError:

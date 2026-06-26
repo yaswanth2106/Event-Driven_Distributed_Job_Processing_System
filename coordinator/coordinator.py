@@ -4,6 +4,10 @@ import time
 import uuid
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from types import ModuleType
+from typing import Optional
+
+config: Optional[ModuleType] = None
 try:
     import config
 except ImportError:
@@ -25,7 +29,7 @@ from queue_engine.dead_letter_queue import DeadLetterQueue
 from metrics.collector import MetricsCollector
 from logging_service.structured_logger import StructuredLogger
 try:
-    from coordinator.autoscaler import Autoscaler
+    from .autoscaler import Autoscaler
 except ImportError:
     from autoscaler import Autoscaler
 
