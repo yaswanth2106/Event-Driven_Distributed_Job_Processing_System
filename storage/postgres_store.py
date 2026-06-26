@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, Column, String, Integer, DateTime, ForeignKey
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from contextlib import contextmanager
 import os
 
@@ -9,7 +9,8 @@ try:
 except ImportError:
     DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/platform_db")
 
-Base = declarative_base()  # type: ignore[valid-type]
+class Base(DeclarativeBase):
+    pass
 
 class WorkerDB(Base):
     __tablename__ = 'workers'

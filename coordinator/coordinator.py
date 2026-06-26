@@ -32,7 +32,8 @@ except ImportError:
 try:
     from .autoscaler import Autoscaler
 except ImportError:
-    from autoscaler import Autoscaler
+    import autoscaler as _autoscaler
+    Autoscaler = _autoscaler.Autoscaler
 
 class CoordinatorService:
     def __init__(self):
