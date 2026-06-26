@@ -1,14 +1,15 @@
-import sys
-import os
 import json
-import uuid
-import time
+import os
 import socket
+import sys
+import threading
+import time
+import uuid
+from types import ModuleType
+from typing import Any, Optional
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-from types import ModuleType
-from typing import Optional
 
 config: Optional[ModuleType] = None
 try:
@@ -19,8 +20,6 @@ except ImportError:
 from connection_pool import bus_pool
 from middleware import MIDDLEWARE_PIPELINE
 from cache.cache_manager import task_cache
-import threading
-from typing import Any
 
 waiting_requests: dict[str, tuple[threading.Event, dict[str, Any]]] = {}
 waiting_requests_lock = threading.Lock()

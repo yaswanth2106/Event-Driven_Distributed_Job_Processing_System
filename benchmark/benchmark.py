@@ -1,19 +1,21 @@
-import asyncio
-import aiohttp
-import time
-import json
 import argparse
-import sys
+import asyncio
+import json
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import sys
+import time
 from types import ModuleType
+
+import aiohttp
+from cache.cache_manager import CacheClient
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 config: ModuleType | None = None
 try:
     import config
 except ImportError:
     config = None
-from cache.cache_manager import CacheClient
 
 class MockWorker:
     def __init__(self, worker_id, host="127.0.0.1", port=9000):

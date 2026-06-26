@@ -1,24 +1,24 @@
 import asyncio
+import json
+import logging
+import os
+import sys
+from types import ModuleType
+from typing import Optional
+
 import websockets
 from websockets.asyncio.server import ServerConnection, serve
-import json
-import sys
-import os
-import logging
+from cache.cache_manager import CacheClient
 
 logging.getLogger("websockets.server").setLevel(logging.ERROR)
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from types import ModuleType
-from typing import Optional
 
 config: Optional[ModuleType] = None
 try:
     import config
 except ImportError:
     config = None
-
-from cache.cache_manager import CacheClient  # noqa: E402
 
 cache_host = config.CACHE_HOST if config else "127.0.0.1"
 cache_port = config.TASK_CACHE_PORT if config else 6381

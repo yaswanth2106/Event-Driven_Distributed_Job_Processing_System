@@ -1,19 +1,20 @@
-import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import sys
+import socket
+import threading
 from types import ModuleType
 from typing import Optional
+
+from router import process_client_socket
+from connection_pool import bus_pool
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 config: Optional[ModuleType] = None
 try:
     import config
 except ImportError:
     config = None
-
-import socket
-import threading
-from router import process_client_socket
-from connection_pool import bus_pool
 
 GATEWAY_HOST = config.GATEWAY_HOST if config else "127.0.0.1"
 GATEWAY_PORT = config.GATEWAY_PORT if config else 8000

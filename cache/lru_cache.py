@@ -1,12 +1,13 @@
-import socket
-import threading
 import os
-from collections import OrderedDict
+import socket
 import sys
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import threading
+from collections import OrderedDict
 from types import ModuleType
 from typing import Optional
+from cache.cache_manager import parse_resp
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 config: Optional[ModuleType] = None
 try:
@@ -14,7 +15,6 @@ try:
 except ImportError:
     config = None
 
-from cache.cache_manager import parse_resp
 
 class LRUCacheServer:
     def __init__(self, host="127.0.0.1", port=6379, max_capacity=1000, aof_file="cache.aof"):

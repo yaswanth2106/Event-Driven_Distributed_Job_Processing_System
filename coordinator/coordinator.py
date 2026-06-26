@@ -1,17 +1,9 @@
-import sys
 import os
+import sys
 import time
 import uuid
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from types import ModuleType
 from typing import Optional
-
-config: Optional[ModuleType] = None
-try:
-    import config
-except ImportError:
-    config = None
 
 from event_bus.event_types import JOB_SUBMITTED, HEARTBEAT, WORKER_FAILED, JOB_COMPLETED, REGISTER, TASK_FAILED, TASK_ASSIGNED
 from event_bus.event_bus import InternalEventBus, EventLoop
@@ -28,6 +20,15 @@ from queue_engine.retry_queue import RetryQueue
 from queue_engine.dead_letter_queue import DeadLetterQueue
 from metrics.collector import MetricsCollector
 from logging_service.structured_logger import StructuredLogger
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+config: Optional[ModuleType] = None
+try:
+    import config
+except ImportError:
+    config = None
+
 try:
     from .autoscaler import Autoscaler
 except ImportError:
