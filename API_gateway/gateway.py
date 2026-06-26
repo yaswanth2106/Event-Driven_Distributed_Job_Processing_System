@@ -5,8 +5,8 @@ import threading
 from types import ModuleType
 from typing import Optional
 
-from router import process_client_socket
-from connection_pool import bus_pool
+from .router import process_client_socket
+from .connection_pool import bus_pool
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 

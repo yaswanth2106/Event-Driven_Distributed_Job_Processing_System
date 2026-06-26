@@ -1,7 +1,7 @@
 import time
 import json
-from rate_limiter import middleware_rate_limiter
-from auth import middleware_authenticator
+from .rate_limiter import middleware_rate_limiter
+from .auth import middleware_authenticator
 
 def middleware_logger(addr, headers, method, path, body=b""):
     print(f"[LOG] [{time.strftime('%H:%M:%S')}] {addr[0]}:{addr[1]} --> {method} '{path}'")
