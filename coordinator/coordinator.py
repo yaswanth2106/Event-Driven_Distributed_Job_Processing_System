@@ -1,3 +1,4 @@
+import os
 import time
 import uuid
 from types import ModuleType
@@ -53,7 +54,8 @@ class CoordinatorService:
         )
         self.registry = WorkerRegistry()
         self.scheduler = Scheduler(self.registry, self.circuit_breaker_manager)
-        self.heartbeat_monitor = HeartbeatMonitor(self.registry, self.bus)
+        hb_timeout=config.HEARTBEAT_TIMEOUT if config else 10.0
+        self.heartbeat_monitor = HeartbeatMonitor(self.registry, self.bus, timeout=hb_timeout)
         self.failure_detector = FailureDetector(self.registry)
         self.task_assigner = TaskAssigner(self.scheduler, self.registry, self.bus)
 
@@ -98,6 +100,11 @@ class CoordinatorService:
         worker_id = event.get("worker_id")
         if worker_id:
             self.circuit_breaker_manager.remove_worker(worker_id)
+            tasks = self.task_repo.get_assigned_tasks_for_worker(worker_id)
+            for task in tasks:
+                print(f"[COORDINATOR] Re-queueing task '{task['id']}' from failed worker '{worker_id}'")
+                self.task_repo.update_status(task["id"], "PENDING", worker_id=None)
+                self.scheduler.queue_job(task)
 
     def handle_job_completed(self, event):
         worker_id = event.get("worker_id")
@@ -143,7 +150,9 @@ class CoordinatorService:
                     self.autoscaler.clean_dead_processes()
                     
                     if qsize > 0 and len(available_workers) == 0:
+                        worker_id = f"worker-dynamic-{len(self.autoscaler.active_subprocesses) + 1}"
                         self.autoscaler.scale_up()
+                        self.bus.publish({"event": "AUTOSCALE_TRIGGERED", "worker_id": worker_id, "timestamp": time.time()})
                         
                     elif qsize == 0 and active_dynamic > 0:
                         all_workers = self.registry.get_all_workers()

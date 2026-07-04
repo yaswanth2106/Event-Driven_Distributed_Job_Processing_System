@@ -91,3 +91,14 @@ class TaskRepository:
                     task.retries += 1
         except Exception as e:
             print(f"[TASK REPO ERROR] Failed to increment retry for task {task_id}: {e}")
+
+    def get_assigned_tasks_for_worker(self, worker_id):
+        if not self.store.online:
+            return []
+        try:
+            with self.store.session_scope() as session:
+                tasks = session.query(TaskDB).filter_by(worker_id=worker_id, status="ASSIGNED").all()
+                return [{"id": t.task_id, "job_type": t.job_type, "priority": t.priority} for t in tasks]
+        except Exception as e:
+            print(f"[TASK REPO ERROR] Failed to get assigned tasks for worker {worker_id}: {e}")
+            return []
