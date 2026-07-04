@@ -555,22 +555,67 @@
                     })
                 });
 
-                const result = await response.json();
+                const initResult = await response.json();
 
                 if (response.ok) {
+                    const taskId = initResult.task_id;
                     statusBox.className = 'status-box success';
-                    statusBox.innerText = `Workload Dispatched!\n\nStatus: ${result.status}\nTask ID: ${result.task_id} \nOutput: ${result.result}
-                     \n  Job: ${result.task_id} \n  Worker: ${result.worker_id}`;
+                    statusBox.style.display = 'block';
+                    statusBox.innerText = `Workload Submitted.\n\nTask ID: ${taskId}\nStatus: PENDING\nWaiting for execution...`;
 
-                    displayExecutionResult(jobType, result.result);
+                    // Start polling
+                    const maxRetries = 30;
+                    let retries = 0;
+
+                    const pollInterval = setInterval(async () => {
+                        retries++;
+                        if (retries > maxRetries) {
+                            clearInterval(pollInterval);
+                            statusBox.className = 'status-box error';
+                            statusBox.innerText = `Execution Failed:\nGateway Timeout: Task was dispatched but failed to complete within the 30s timeout boundary.`;
+                            submitBtn.disabled = false;
+                            spinner.style.display = 'none';
+                            return;
+                        }
+
+                        try {
+                            const statusResponse = await fetch(`/status?id=${taskId}`);
+                            if (statusResponse.ok) {
+                                const statusResult = await statusResponse.json();
+                                const currentStatus = statusResult.status;
+
+                                if (currentStatus === 'COMPLETED') {
+                                    clearInterval(pollInterval);
+                                    statusBox.className = 'status-box success';
+                                    statusBox.innerText = `Workload Processed!\n\nStatus: COMPLETED\nTask ID: ${taskId}\nWorker ID: ${statusResult.worker_id || 'N/A'}`;
+                                    displayExecutionResult(jobType, statusResult.result);
+                                    submitBtn.disabled = false;
+                                    spinner.style.display = 'none';
+                                } else if (currentStatus === 'DLQ') {
+                                    clearInterval(pollInterval);
+                                    statusBox.className = 'status-box error';
+                                    statusBox.innerText = `Execution Failed (DLQ):\n${statusResult.error || 'Workload execution failed and moved to Dead Letter Queue.'}`;
+                                    submitBtn.disabled = false;
+                                    spinner.style.display = 'none';
+                                } else {
+                                    statusBox.innerText = `Processing Workload...\n\nTask ID: ${taskId}\nStatus: ${currentStatus}\nTime elapsed: ${retries}s`;
+                                }
+                            }
+                        } catch (pollErr) {
+                            console.error("Polling error:", pollErr);
+                        }
+                    }, 1000);
+
                 } else {
                     statusBox.className = 'status-box error';
-                    statusBox.innerText = `Submission/Execution Failed:\n${result.error || 'Server error occurred'}`;
+                    statusBox.innerText = `Submission Failed:\n${initResult.error || 'Server error occurred'}`;
+                    submitBtn.disabled = false;
+                    spinner.style.display = 'none';
+                    statusBox.style.display = 'block';
                 }
             } catch (err) {
                 statusBox.className = 'status-box error';
                 statusBox.innerText = `Connection Error: Could not reach frontend controller proxy.`;
-            } finally {
                 submitBtn.disabled = false;
                 spinner.style.display = 'none';
                 statusBox.style.display = 'block';

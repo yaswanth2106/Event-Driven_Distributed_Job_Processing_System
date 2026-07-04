@@ -68,6 +68,40 @@ class FrontendProxyHandler(http.server.BaseHTTPRequestHandler):
             html_path = os.path.join(os.path.dirname(__file__), "index.html")
             with open(html_path, "r", encoding="utf-8") as f:
                 self.wfile.write(f.read().encode("utf-8"))
+        elif self.path.startswith("/status"):
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.connect((GATEWAY_HOST, GATEWAY_PORT))
+                    http_request = (
+                        f"GET {self.path} HTTP/1.1\r\n"
+                        f"Host: {GATEWAY_HOST}:{GATEWAY_PORT}\r\n"
+                        f"Connection: close\r\n\r\n"
+                    )
+                    s.sendall(http_request.encode('utf-8'))
+                    
+                    response = b""
+                    while True:
+                        chunk = s.recv(4096)
+                        if not chunk:
+                            break
+                        response += chunk
+                        
+                    parts = response.split(b"\r\n\r\n", 1)
+                    body = parts[1] if len(parts) > 1 else b"{}"
+                    
+                    header_lines = parts[0].decode('utf-8', errors='ignore').split("\r\n")
+                    status_line = header_lines[0]
+                    status_code = int(status_line.split(" ")[1])
+                    
+                    self.send_response(status_code)
+                    self.send_header("Content-Type", "application/json")
+                    self.end_headers()
+                    self.wfile.write(body)
+            except Exception as e:
+                self.send_response(500)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": f"Failed to get status: {str(e)}"}).encode('utf-8'))
         else:
             self.send_response(404)
             self.end_headers()

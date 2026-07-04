@@ -233,88 +233,47 @@ def process_client_socket(client_conn, client_addr):
                     bus_sock.recv(1024)
                     bus_pool.release_connection(bus_sock, status_ok=True)
                     
-                    if task_id:
-                        status = "PENDING"
-                        completed = False
-                        worker_id = None
-                        task_result = None
-                        task_error = None
-                        
-                        try:
-                            task_raw = task_cache.get(f"task:{task_id}")
-                            if task_raw:
-                                task_data = json.loads(task_raw)
-                                status = task_data.get("status")
-                                worker_id = task_data.get("worker_id")
-                                task_result = task_data.get("result")
-                                task_error = task_data.get("error")
-                                if status in ["COMPLETED", "DLQ"]:
-                                    completed = True
-                        except Exception:
-                            pass
-                            
-                        if not completed:
-                            event = threading.Event()
-                            result = {"status": "PENDING"}
-                            with waiting_requests_lock:
-                                waiting_requests[task_id] = (event, result)
-                                
-                            completed_in_time = event.wait(timeout=30.0)
-                            
-                            with waiting_requests_lock:
-                                waiting_requests.pop(task_id, None)
-                                
-                            if completed_in_time:
-                                status = result.get("status", "PENDING")
-                                worker_id = result.get("worker_id")
-                                task_result = result.get("result")
-                                task_error = result.get("error")
-                            else:
-
-                                try:
-                                    task_raw = task_cache.get(f"task:{task_id}")
-                                    if task_raw:
-                                        task_data = json.loads(task_raw)
-                                        status = task_data.get("status", "PENDING")
-                                        worker_id = task_data.get("worker_id")
-                                        task_result = task_data.get("result")
-                                        task_error = task_data.get("error")
-                                except Exception:
-                                    pass
-
-                        if status == "COMPLETED":
-                            resp_body = json.dumps({
-                                "status": "COMPLETED",
-                                "task_id": task_id,
-                                "message": "Workload processed and completed successfully.",
-                                "worker_id": worker_id,
-                                "result": task_result
-                            })
-                            client_conn.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {len(resp_body)}\r\n\r\n{resp_body}".encode('utf-8'))
-                        elif status == "DLQ":
-                            resp_body = json.dumps({
-                                "status": "DLQ",
-                                "task_id": task_id,
-                                "worker_id": worker_id,
-                                "error": task_error or "Workload execution permanently failed and moved to Dead Letter Queue (DLQ)."
-                            })
-                            client_conn.sendall(f"HTTP/1.1 422 Unprocessable Entity\r\nContent-Type: application/json\r\nContent-Length: {len(resp_body)}\r\n\r\n{resp_body}".encode('utf-8'))
-                        else:
-                            resp_body = json.dumps({
-                                "status": status,
-                                "task_id": task_id,
-                                "error": task_error or "Gateway Timeout",
-                                "message": "Task was dispatched but failed to complete within the timeout boundary."
-                            })
-                            client_conn.sendall(f"HTTP/1.1 504 Gateway Timeout\r\nContent-Type: application/json\r\nContent-Length: {len(resp_body)}\r\n\r\n{resp_body}".encode('utf-8'))
-                    else:
-                        resp_body = '{"status": "Event Dispatched", "message": "Successfully forwarded to Internal Event Bus (no ID tracking)"}'
-                        client_conn.sendall(f"HTTP/1.1 202 Accepted\r\nContent-Type: application/json\r\nContent-Length: {len(resp_body)}\r\n\r\n{resp_body}".encode('utf-8'))
-                
+                    resp_body = json.dumps({
+                        "status": "PENDING",
+                        "task_id": task_id,
+                        "message": "Task received and forwarded to Event Bus."
+                    })
+                    client_conn.sendall(f"HTTP/1.1 202 Accepted\r\nContent-Type: application/json\r\nContent-Length: {len(resp_body)}\r\n\r\n{resp_body}".encode('utf-8'))
                 except Exception as e:
                     bus_pool.release_connection(bus_sock, status_ok=False)
                     body = json.dumps({"error": "Event Bus Forwarding Error", "detail": str(e)})
                     client_conn.sendall(f"HTTP/1.1 500 Internal Server Error\r\nContent-Length: {len(body)}\r\n\r\n{body}".encode('utf-8'))
+            
+            elif original_path.startswith("/status"):
+                task_id = None
+                if "?" in original_path:
+                    query = original_path.split("?", 1)[1]
+                    for pair in query.split("&"):
+                         if "=" in pair:
+                             k, v = pair.split("=", 1)
+                             if k == "id":
+                                 task_id = v
+                                 break
+                
+                if not task_id:
+                     body = '{"error": "Missing task ID"}'
+                     client_conn.sendall(f"HTTP/1.1 400 Bad Request\r\nContent-Type: application/json\r\nContent-Length: {len(body)}\r\n\r\n{body}".encode('utf-8'))
+                     return
+                     
+                try:
+                     task_raw = task_cache.get(f"task:{task_id}")
+                     if task_raw:
+                         client_conn.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {len(task_raw)}\r\n\r\n{task_raw}".encode('utf-8'))
+                     else:
+                         body = json.dumps({
+                             "status": "PENDING",
+                             "task_id": task_id,
+                             "message": "Task not found in cache yet."
+                         })
+                         client_conn.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {len(body)}\r\n\r\n{body}".encode('utf-8'))
+                except Exception as e:
+                     body = json.dumps({"error": "Cache Read Error", "detail": str(e)})
+                     client_conn.sendall(f"HTTP/1.1 500 Internal Server Error\r\nContent-Length: {len(body)}\r\n\r\n{body}".encode('utf-8'))
             else:
                 body = '{"status": "Gateway OK"}'
                 client_conn.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {len(body)}\r\n\r\n{body}".encode('utf-8'))
