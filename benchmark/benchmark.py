@@ -2,7 +2,6 @@ import argparse
 import asyncio
 import json
 import math
-import os
 import sys
 import time
 import aiohttp
@@ -423,7 +422,7 @@ async def run_benchmark(num_jobs, num_workers, concurrency):
     print(f"Successful HTTP Submissions:  {successful_requests}")
     print(f"Total Duration:               {total_duration:.2f} seconds")
     print(f"Submission Throughput (RPS):  {throughput:.2f} req/s")
-    
+    print(f"Average Gateway Response Time : {avg_gateway_latency*1000:.2f} ms")
     print(f"Gateway Latency (p50):        {p50_gateway*1000:.2f} ms")
     print(f"Gateway Latency (p95):        {p95_gateway*1000:.2f} ms")
     print(f"Gateway Latency (p99):        {p99_gateway*1000:.2f} ms")
@@ -435,23 +434,23 @@ async def run_benchmark(num_jobs, num_workers, concurrency):
     if detection_time is not None:
         print(f"Worker Failure Detection:     {detection_time:.2f} seconds")
     else:
-        print(f"Worker Failure Detection:     N/A (No failure detected)")
+        print("Worker Failure Detection:     (No failure detected)")
         
     if avg_reassignment_time is not None:
         print(f"Task Reassignment Latency:   {avg_reassignment_time:.2f} seconds")
     else:
-        print(f"Task Reassignment Latency:   N/A (No task reassigned)")
+        print("Task Reassignment Latency:   (No task reassigned)")
         
     if avg_autoscaling_time is not None:
         print(f"Autoscaling Response Time:    {avg_autoscaling_time:.2f} seconds")
     else:
-        print(f"Autoscaling Response Time:    N/A (No scaling triggered)")
+        print("Autoscaling Response Time:    (No scaling triggered)")
 
     print(f"Worker Utilization:           {worker_utilization:.2f}% of capacity")
     if coordinator_cpu is not None:
         print(f"Coordinator CPU Usage:        {coordinator_cpu:.2f}%")
     else:
-        print(f"Coordinator CPU Usage:        N/A")
+        print("Coordinator CPU Usage:        N/A")
     print(f"Platform Average Latency:     {platform_avg_latency*1000:.2f} ms")
     print(f"Platform Failed Tasks:        {platform_failures}")
 
